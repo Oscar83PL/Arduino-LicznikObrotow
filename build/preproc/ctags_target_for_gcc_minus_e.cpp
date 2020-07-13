@@ -12,12 +12,14 @@
 
 SSD1306AsciiWire oled;
 
-uint32_t Ttime, dTtime; // integer for storing total time of a cycle
+uint32_t time, dTtime; // integer for storing total time of a cycle
 float frequency; //storing frequency
 float obroty;
 const int buttonPin = 2; // the number of the pushbutton pin
-uint32_t screenupdateTime = micros();;
-void setup() {
+uint32_t screenupdateTime = micros();
+;
+void setup()
+{
   Wire.begin();
 
   // initialize the pushbutton pin as an input:
@@ -32,28 +34,33 @@ int buttonState = 0; // current state of the button
 int lastButtonState = 0; // previous state of the button
 uint32_t startPulse, stopPulse;
 
-void loop() {
+void loop()
+{
   buttonState = digitalRead(buttonPin);
-  if (buttonState != lastButtonState) {
-    if (buttonState == 0x1) {
-        stopPulse = micros();
-        Ttime = stopPulse - startPulse;
-        startPulse = micros();
+  if (buttonState != lastButtonState)
+  {
+    if (buttonState == 0x1)
+    {
+      stopPulse = micros();
+      Ttime = stopPulse - startPulse;
+      startPulse = micros();
 
-        frequency=1000000.0/Ttime; //getting frequency with Ttime is in Micro seconds
-        obroty = frequency * 60.0;
-
-      } else {
+      frequency = 1000000.0 / Ttime; //getting frequency with Ttime is in Micro seconds
+      obroty = frequency * 60.0;
+    }
+    else
+    {
       ;
     }
   }
   lastButtonState = buttonState;
 
-    if (micros() > screenupdateTime + 1000000) {
-      oled.clear();
-      oled.println(Ttime);
-      oled.println(frequency);
-      oled.println(obroty);
-      screenupdateTime = micros();
-    }
+  if (micros() > screenupdateTime + 1000000)
+  {
+    oled.clear();
+    oled.println(Ttime);
+    oled.println(frequency);
+    oled.println(obroty);
+    screenupdateTime = micros();
+  }
 }

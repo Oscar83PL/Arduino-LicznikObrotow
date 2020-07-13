@@ -13,19 +13,21 @@
 
 SSD1306AsciiWire oled;
 
-uint32_t Ttime, dTtime;            // integer for storing total time of a cycle
-float frequency;        //storing frequency
+uint32_t time, dTtime; // integer for storing total time of a cycle
+float frequency;       //storing frequency
 float obroty;
-const int buttonPin = 2;     // the number of the pushbutton pin
-uint32_t screenupdateTime = micros();;
-#line 19 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
+const int buttonPin = 2; // the number of the pushbutton pin
+uint32_t screenupdateTime = micros();
+;
+#line 20 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
 void setup();
-#line 34 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
+#line 36 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
 void loop();
-#line 19 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
-void setup() {
+#line 20 "c:\\Users\\Oskar\\Desktop\\Projekty\\20. Arduino\\Arduino-LicznikObrotow\\Arduino-LicznikObrotow.ino"
+void setup()
+{
   Wire.begin();
-  
+
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
 
@@ -34,33 +36,38 @@ void setup() {
   oled.set1X();
 }
 
-int buttonState = 0;         // current state of the button
-int lastButtonState = 0;     // previous state of the button
+int buttonState = 0;     // current state of the button
+int lastButtonState = 0; // previous state of the button
 uint32_t startPulse, stopPulse;
 
-void loop() {
+void loop()
+{
   buttonState = digitalRead(buttonPin);
-  if (buttonState != lastButtonState) {
-    if (buttonState == HIGH) {
-        stopPulse = micros();
-        Ttime = stopPulse - startPulse;
-        startPulse = micros();
-  
-        frequency=1000000.0/Ttime;    //getting frequency with Ttime is in Micro seconds
-        obroty = frequency * 60.0;
+  if (buttonState != lastButtonState)
+  {
+    if (buttonState == HIGH)
+    {
+      stopPulse = micros();
+      Ttime = stopPulse - startPulse;
+      startPulse = micros();
 
-      } else {
+      frequency = 1000000.0 / Ttime; //getting frequency with Ttime is in Micro seconds
+      obroty = frequency * 60.0;
+    }
+    else
+    {
       ;
     }
   }
   lastButtonState = buttonState;
 
-    if (micros() > screenupdateTime + 1000000) {
-      oled.clear();
-      oled.println(Ttime);
-      oled.println(frequency);
-      oled.println(obroty);
-      screenupdateTime = micros();
-    }
+  if (micros() > screenupdateTime + 1000000)
+  {
+    oled.clear();
+    oled.println(Ttime);
+    oled.println(frequency);
+    oled.println(obroty);
+    screenupdateTime = micros();
+  }
 }
 
