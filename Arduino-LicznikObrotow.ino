@@ -1,65 +1,124 @@
+#include "TM1637.h"
 
-#include <Wire.h>
-#include "SSD1306Ascii.h"
-#include "SSD1306AsciiWire.h"
+#define CLK_A 4
+#define DIO_A 3
+#define CLK_B 6
+#define DIO_B 5
 
-// 0X3C+SA0 - 0x3C or 0x3D
-#define I2C_ADDRESS 0x3C
+TM1637 out_Display_A(CLK_A,DIO_A);
+TM1637 out_Display_B(CLK_B,DIO_B);
 
-// Define proper RST_PIN if required.
-#define RST_PIN -1
+int8_t Disp_A[] = {0x00,0x00,0x00,0x00};
+int8_t Disp_B[] = {0x00,0x00,0x00,0x00};
 
-SSD1306AsciiWire oled;
+uint32_t Ttime_A, dTtime_A;
+uint32_t Ttime_B, dTtime_B;
 
-uint32_t Ttime, dTtime; // integer for storing total time of a cycle
-float frequency;        //storing frequency
-float obroty;
-const int buttonPin = 2; // the number of the pushbutton pin
+float frequency_A = 0, rev_per_minute_A = 0;
+float frequency_B = 0, rev_per_minute_B = 0;
+
+const int inPin_Pulse_A = 2; 
+const int inPin_Pulse_B = 7;
+ 
 uint32_t screenupdateTime = micros();
-;
+
 void setup()
 {
-  Wire.begin();
+    Serial.begin(9600);
+    Serial.println("Start -----------------");
 
-  // initialize the pushbutton pin as an input:
-  pinMode(buttonPin, INPUT);
+  
+  
+  pinMode(inPin_Pulse_A, INPUT);
+  pinMode(inPin_Pulse_B, INPUT);
 
-  oled.begin(&Adafruit128x32, I2C_ADDRESS, RST_PIN);
-  oled.setFont(Adafruit5x7);
-  oled.set1X();
+  out_Display_A.init();
+  out_Display_A.set(BRIGHT_TYPICAL);//BRIGHT_TYPICAL = 2,BRIGHT_DARKEST = 0,BRIGHTEST = 7;
+
+  out_Display_B.init();
+  out_Display_B.set(BRIGHT_TYPICAL);//BRIGHT_TYPICAL = 2,BRIGHT_DARKEST = 0,BRIGHTEST = 7;
+
+
 }
 
-int buttonState = 0;     // current state of the button
-int lastButtonState = 0; // previous state of the button
-uint32_t startPulse, stopPulse;
+int inPinState_A = 0, lastinPinState_A = 0;
+int inPinState_B = 0, lastinPinState_B = 0;
+
+uint32_t startPulse_A = 0, stopPulse_A = 0;
+uint32_t startPulse_B = 0, stopPulse_B = 0;
+
+uint32_t rev_per_minute_Aa, rev_per_minute_Bb;
 
 void loop()
 {
-  buttonState = digitalRead(buttonPin);
-  if (buttonState != lastButtonState)
+  inPinState_A = digitalRead(inPin_Pulse_A);
+  inPinState_B = digitalRead(inPin_Pulse_B);
+  
+  if (inPinState_A != lastinPinState_A)
   {
-    if (buttonState == HIGH)
+    if (inPinState_A == HIGH)
     {
-      stopPulse = micros();
-      Ttime = stopPulse - startPulse;
-      startPulse = micros();
+      stopPulse_A   = micros();
+      Ttime_A       = stopPulse_A - startPulse_A;
+      startPulse_A  = micros();
 
-      frequency = 1000000.0 / Ttime; //getting frequency with Ttime is in Micro seconds
-      obroty = frequency * 60.0;
+      frequency_A       = 1000000.0 / Ttime_A; 
+      rev_per_minute_A  = frequency_A * 60.0;
     }
     else
     {
       ;
     }
   }
-  lastButtonState = buttonState;
+  lastinPinState_A = inPinState_A;
+
+  if (inPinState_B != lastinPinState_B)
+  {
+    if (inPinState_B == HIGH)
+    {
+      stopPulse_B   = micros();
+      Ttime_B       = stopPulse_B - startPulse_B;
+      startPulse_B  = micros();
+
+      frequency_B       = 1000000.0 / Ttime_B; 
+      rev_per_minute_B  = frequency_B * 60.0;
+    }
+    else
+    {
+      ;
+    }
+  }
+  lastinPinState_B = inPinState_B;
+
+
 
   if (micros() > screenupdateTime + 1000000)
   {
-    oled.clear();
-    oled.println(Ttime);
-    oled.println(frequency);
-    oled.println(obroty);
+
+    if (micros() > startPulse_A + 12000000)
+    {
+      rev_per_minute_A = 0;
+    }
+    if (micros() > startPulse_B + 12000000)
+    {
+      rev_per_minute_B = 0;
+    }
+    
+    rev_per_minute_Aa = rev_per_minute_A;
+    Disp_A[3] = rev_per_minute_Aa % 10;
+    Disp_A[2] = (rev_per_minute_Aa / 10) % 10;
+    Disp_A[1] = (rev_per_minute_Aa / 100) % 10;
+    Disp_A[0] = (rev_per_minute_Aa / 1000) % 10;
+
+    rev_per_minute_Bb = rev_per_minute_B;
+    Disp_B[3] = rev_per_minute_Bb % 10;
+    Disp_B[2] = (rev_per_minute_Bb / 10) % 10;
+    Disp_B[1] = (rev_per_minute_Bb / 100) % 10;
+    Disp_B[0] = (rev_per_minute_Bb / 1000) % 10;
+
+    out_Display_A.display(Disp_A);
+    out_Display_B.display(Disp_B);
+    
     screenupdateTime = micros();
   }
 }
